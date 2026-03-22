@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOLFFY | Move Along</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        spBg: '#0a0505',
+                        spPanel: '#140a0a',
+                        spHover: '#281414',
+                        spGreen: '#1DB954',
+                        spText: '#FFFFFF',
+                        spSubtext: '#b3b3b3',
+                        rockOrange: '#FF4500',
+                        rockRed: '#DC143C'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* WOLFFY AESTHETIC - ROCK THEME */
+        body { 
+            background-color: #0a0505; 
+            color: #FFFFFF; 
+            overflow-x: hidden; 
+            font-family: 'Inter', sans-serif;
+            background-image: radial-gradient(circle at 15% 50%, rgba(255, 69, 0, 0.1), transparent 50%),
+                              radial-gradient(circle at 85% 30%, rgba(220, 20, 60, 0.15), transparent 50%),
+                              linear-gradient(to bottom, #140a0a 0%, #0a0505 100%);
+            background-attachment: fixed;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 69, 0, 0.5); }
+
+        .glass-panel {
+            background: rgba(20, 10, 10, 0.6);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        .lyric-word {
+            position: relative; display: inline-block; cursor: pointer;
+            color: #FFFFFF; font-weight: 800; transition: all 0.2s;
+            border-bottom: 2px dashed #FF4500; padding-bottom: 2px;
+        }
+        .lyric-word:hover { color: #FF4500; text-shadow: 0 0 15px rgba(255, 69, 0, 0.6); }
+        .lyric-word.active { background: #FF4500; color: #FFFFFF; border-bottom: none; padding: 2px 6px; border-radius: 4px; }
+
+        .spotify-lyrics-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+
+        .combat-btn { transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); }
+        .combat-btn:hover:not(:disabled) { background: rgba(255,255,255,0.15); border-color: rgba(255, 69, 0, 0.5); transform: scale(1.02); }
+        .combat-btn.correct { background: #FF4500; color: #FFFFFF; font-weight: bold; border-color: #FF4500; box-shadow: 0 0 15px rgba(255, 69, 0, 0.4); }
+        .combat-btn.wrong { background: #DC143C; color: #FFFFFF; border-color: #DC143C; opacity: 0.6; }
+
+        .stt-box {
+            background: rgba(255,255,255,0.05);
+            border-left: 4px solid #FF4500;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .slide-up { animation: slideUp 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .damage-flash { animation: shake 0.3s; box-shadow: inset 0 0 60px rgba(220, 20, 60, 0.4) !important; }
+        .xp-flash { box-shadow: inset 0 0 60px rgba(255, 69, 0, 0.4) !important; }
+
+        .drawer { transition: transform 0.4s cubic-bezier(0.3, 0.7, 0.3, 1); }
+        
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden selection:bg-rockOrange selection:text-white">
+
+    <!-- TOP NAV -->
+    <header class="fixed top-0 w-full z-40 glass-panel px-6 py-4 flex justify-between items-center border-b-0">
+        <div class="flex items-center gap-3">
+            <i class="fa-brands fa-spotify text-spGreen text-3xl drop-shadow-[0_0_10px_rgba(29,185,84,0.5)]"></i>
+            <span class="font-bold text-xl tracking-tight">Wolffy <span class="text-xs bg-white text-black px-1 rounded ml-1 uppercase shadow-lg">B1</span></span>
+        </div>
+        
+        <div class="flex items-center gap-6 text-sm font-medium">
+            <div class="flex items-center gap-2" title="Energy (HP)">
+                <i class="fa-solid fa-heart-pulse text-rockRed"></i>
+                <span id="hp-text" class="text-white">100%</span>
+            </div>
+            <div class="flex items-center gap-2" title="Fans (XP)">
+                <i class="fa-solid fa-fire text-rockOrange"></i>
+                <span id="xp-text" class="text-white">0</span>
+            </div>
+            <button onclick="toggleFullScreen()" class="text-spSubtext hover:text-white transition-colors ml-2" title="Fullscreen">
+                <i class="fa-solid fa-expand text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN STAGE -->
+    <main id="mission-content" class="flex-grow relative pt-20 pb-28 overflow-y-auto w-full z-10 flex flex-col items-center"></main>
+
+    <!-- RIGHT DRAWER: WOLF INSIGHTS -->
+    <div id="intel-panel" class="fixed right-0 top-16 bottom-[90px] w-[380px] glass-panel border-l-0 border-white/10 z-[5000] translate-x-full drawer p-6 flex flex-col">
+        <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+            <h3 class="font-bold text-spSubtext text-sm tracking-widest uppercase"><i class="fa-brands fa-wolf-pack-battles text-rockOrange mr-2 text-lg"></i>WOLF Insights</h3>
+            <button onclick="closeIntel()" class="text-spSubtext hover:text-white transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div id="intel-content" class="flex-grow text-base overflow-y-auto pr-2 scrollbar-hide"></div>
+    </div>
+
+    <!-- LEFT DRAWER: PLAYLIST -->
+    <div id="lesson-map" class="fixed left-0 top-16 bottom-[90px] w-[350px] glass-panel border-r-0 border-white/10 z-[5000] -translate-x-full drawer flex flex-col">
+        <div class="p-6 pb-2">
+            <h2 class="font-bold text-xl mb-1">Tracklist</h2>
+            <p class="text-xs text-spSubtext font-medium uppercase tracking-widest" id="map-subtitle">35 Steps • Intermediate B1</p>
+        </div>
+        <div class="px-6 py-4">
+            <div class="w-full h-1 bg-spHover rounded-full overflow-hidden">
+                <div id="playlist-progress" class="h-full bg-rockOrange transition-all duration-300" style="width: 0%"></div>
+            </div>
+        </div>
+        <div id="map-nodes" class="flex-grow flex flex-col gap-1 overflow-y-auto px-4 pb-4"></div>
+    </div>
+
+    <!-- RIGHT DRAWER: TEACHER'S NOTES -->
+    <div id="teacher-board" class="fixed right-0 top-0 h-full w-[450px] glass-panel border-l border-rockOrange/30 z-[6000] translate-x-full drawer flex flex-col">
+        <div class="p-6 border-b border-white/10 flex justify-between items-center bg-black/20">
+            <h2 class="font-bold text-lg text-rockOrange"><i class="fa-solid fa-chalkboard-user mr-2 drop-shadow-[0_0_8px_rgba(255,69,0,0.5)]"></i>Teacher's Board</h2>
+            <div class="flex gap-4">
+                <button onclick="clearNotes()" class="text-xs font-bold uppercase tracking-widest text-spSubtext hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1 rounded transition-colors"><i class="fa-solid fa-trash-can mr-1"></i>Clear</button>
+                <button onclick="toggleDrawer('teacher-board')" class="text-spSubtext hover:text-white"><i class="fa-solid fa-chevron-right text-xl"></i></button>
+            </div>
+        </div>
+        <div class="flex-grow relative">
+            <textarea id="t-notes" class="absolute inset-0 w-full h-full bg-transparent p-6 text-white text-lg resize-none focus:outline-none font-mono leading-relaxed" placeholder="> Type live corrections or whiteboard notes here..."></textarea>
+        </div>
+    </div>
+
+    <!-- BOTTOM MUSIC PLAYER -->
+    <footer class="fixed bottom-0 w-full z-50 glass-panel border-t-0 border-white/5 px-4 py-3 flex justify-between items-center h-[90px]">
+        <div class="flex items-center gap-4 w-1/3">
+            <div class="w-14 h-14 bg-spHover rounded flex items-center justify-center overflow-hidden flex-shrink-0 shadow-[0_4px_15px_rgba(0,0,0,0.5)] group relative cursor-pointer" onclick="toggleDrawer('lesson-map')">
+                <img src="https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&q=80&w=200" alt="Album Cover" class="w-full h-full object-cover group-hover:opacity-50 transition-opacity" onerror="this.style.display='none'">
+                <i class="fa-solid fa-list-ul absolute text-white opacity-0 group-hover:opacity-100 transition-opacity z-20"></i>
+            </div>
+            <div class="hidden sm:block truncate">
+                <h4 class="text-white text-sm font-semibold truncate cursor-pointer hover:underline" onclick="toggleDrawer('lesson-map')">Move Along</h4>
+                <p class="text-spSubtext text-xs truncate">The All-American Rejects • B1</p>
+            </div>
+            <button onclick="toggleDrawer('teacher-board')" class="ml-2 text-spSubtext hover:text-rockOrange transition-colors" title="Teacher Notes">
+                <i class="fa-solid fa-chalkboard"></i>
+            </button>
+        </div>
+
+        <div class="flex flex-col items-center justify-center w-1/3 max-w-md">
+            <div class="flex items-center gap-6 mb-2">
+                <button onclick="prevStep()" id="btn-prev" class="text-spSubtext hover:text-white disabled:opacity-30 transition-colors text-lg"><i class="fa-solid fa-backward-step"></i></button>
+                <button class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform"><i class="fa-solid fa-play ml-1 text-sm"></i></button>
+                <button onclick="nextStep()" id="btn-next" class="text-spSubtext hover:text-white disabled:opacity-30 transition-colors text-lg"><i class="fa-solid fa-forward-step"></i></button>
+            </div>
+            <div class="w-full flex items-center gap-2 text-xs text-spSubtext font-mono">
+                <span id="current-step-display">01</span>
+                <div class="flex-grow h-1 bg-spHover rounded-full overflow-hidden">
+                    <div id="player-progress" class="h-full bg-white hover:bg-rockOrange transition-all duration-300"></div>
+                </div>
+                <span id="total-step-display">35</span>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 w-1/3 text-spSubtext">
+            <i class="fa-solid fa-microphone text-sm hover:text-white cursor-pointer transition-colors" title="Lyrics"></i>
+            <i class="fa-solid fa-volume-high text-sm"></i>
+            <div class="w-20 h-1 bg-spHover rounded-full hidden sm:block">
+                <div class="h-full w-2/3 bg-spSubtext hover:bg-rockOrange rounded-full cursor-pointer transition-colors"></div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ENGINE LOGIC -->
+    <script>
+        let state = { hp: 100, xp: 0, current: 0 };
+
+        const intelDB = {
+            "waste": { emoji: "⏳", title: "Waste", type: "Verb", meaning: "To use time, money, or energy in a bad way.", example: "Don't waste your days worrying about the past.", followUp: "What is something that makes you waste a lot of time?" },
+            "strong": { emoji: "💪", title: "Strong", type: "Adjective", meaning: "Having physical or mental power; able to handle problems.", example: "You have to be strong during hard times.", followUp: "Who is the strongest person you know mentally?" },
+            "hope": { emoji: "✨", title: "Hope", type: "Noun", meaning: "A feeling of expectation and desire for a certain thing to happen.", example: "Even when things are bad, never lose hope.", followUp: "What gives you hope when you are having a bad day?" },
+            
+            // Phrasal Verbs
+            "move_along": { emoji: "🚶‍♂️", title: "Move Along", type: "Phrasal Verb", meaning: "To continue moving forward; to leave a difficult situation in the past.", example: "It hurts, but you have to move along.", followUp: "Is it difficult for you to move along after making a big mistake?" },
+            "go_ahead": { emoji: "🟢", title: "Go Ahead", type: "Phrasal Verb", meaning: "To proceed; to start or continue doing something.", example: "Don't wait for me, go ahead and start eating.", followUp: "When you are scared, what helps you go ahead and do it anyway?" },
+            "make_it_through": { emoji: "🛡️", title: "Make it through", type: "Phrasal Verb", meaning: "To survive or finish a very difficult experience.", example: "The test was hard, but I made it through.", followUp: "Think of a tough situation you 'made it through'. How did you feel after?" },
+
+            // Grammar
+            "even_when": { emoji: "🌧️", title: "Even when", type: "Grammar: Concession", meaning: "Used to say that a difficult situation will NOT stop the action.", example: "I will fight even when I am tired.", followUp: "Tell me something you do EVEN WHEN you don't want to." }
+        };
+
+        const lessonData = [
+            // 1. TEACHER'S GUIDE
+            {
+                title: "Instructor's Guide",
+                html: `
+                    <div class="w-full max-w-2xl mx-auto px-4 py-8 fade-in">
+                        <div class="glass-panel p-8 rounded-2xl relative shadow-2xl border-t-4 border-rockOrange">
+                            <span class="absolute -top-3 left-6 bg-spBg px-3 text-rockOrange text-xs font-bold uppercase tracking-widest border border-rockOrange/30 rounded-full py-1">Teacher Only</span>
+                            <h2 class="font-bold text-3xl mb-6 text-white drop-shadow-md">Wolffy B1 Plan (Move Along)</h2>
+                            <div class="space-y-4 text-white/80 text-base">
+                                <p><strong class="text-white">Goal:</strong> Teach Phrasal Verbs of resilience (Move along, Go ahead, Make it through) and Concessive time clauses (Even when).</p>
+                                <p><strong class="text-white">Theme:</strong> Resilience, stop overthinking, moving forward.</p>
+                                <p><strong class="text-white">Update:</strong> "Genius Insights" foi atualizado para <strong>WOLF Insights</strong>. Os antigos sliders de Vibe agora são <strong class="text-rockOrange">botões interativos de escolha (RPG Style)</strong> nas páginas 28 a 31!</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            // 2. COVER
+            {
+                title: "Album Cover",
+                html: `
+                    <div class="w-full h-full flex flex-col items-center justify-center text-center px-4 fade-in">
+                        <div class="w-64 h-64 sm:w-80 sm:h-80 mb-8 rounded-2xl shadow-[0_20px_50px_rgba(255,69,0,0.3)] overflow-hidden border border-white/10 relative">
+                            <img src="https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&q=80&w=800" onerror="this.style.display='none'" alt="Rock Concert" class="absolute inset-0 w-full h-full object-cover z-10">
+                        </div>
+                        <h1 class="font-black text-5xl sm:text-7xl text-white mb-2 tracking-tight drop-shadow-lg">Move Along</h1>
+                        <p class="text-white/70 text-xl mb-8 font-medium">The All-American Rejects</p>
+                        <div class="flex gap-3">
+                            <span class="glass-panel text-white border border-white/20 px-5 py-2 rounded-full text-sm font-bold uppercase tracking-wider shadow-lg">B1 Intermediate</span>
+                            <span class="glass-panel text-rockOrange border border-rockOrange/30 px-5 py-2 rounded-full text-sm font-bold uppercase tracking-wider">Phrasal Verbs</span>
+                        </div>
+                    </div>
+                `
+            },
+            // 3-5. WARMUPS
+            {
+                title: "Warmup: Overthinking",
+                html: `
+                    <div class="w-full max-w-4xl mx-auto px-4 py-12 fade-in flex flex-col items-center">
+                        <div class="text-center mb-8"><h2 class="font-bold text-2xl text-spSubtext uppercase tracking-widest">Symptom Check I</h2></div>
+                        <div class="glass-panel p-10 md:p-14 rounded-3xl text-center w-full shadow-[0_10px_40px_rgba(255,69,0,0.2)]">
+                            <i class="fa-solid fa-brain text-6xl text-rockOrange mb-6 drop-shadow-lg"></i>
+                            <p class="mb-10 font-black text-3xl md:text-4xl leading-snug text-white">Do you spend too much time <span class="text-rockOrange">thinking</span> about your problems instead of solving them?</p>
+                            
+                            <div class="stt-box p-6 bg-white/5 text-left rounded-xl">
+                                <span class="text-xs font-mono text-rockOrange block mb-2 uppercase tracking-widest"><i class="fa-solid fa-microphone mr-2"></i>Speak:</span>
+                                <p class="text-white text-xl font-medium">"Yes, I always overthink when... / No, I prefer to take action immediately."</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Warmup: Bad Days",
+                html: `
+                    <div class="w-full max-w-4xl mx-auto px-4 py-12 fade-in flex flex-col items-center">
+                        <div class="text-center mb-8"><h2 class="font-bold text-2xl text-spSubtext uppercase tracking-widest">Symptom Check II</h2></div>
+                        <div class="glass-panel p-10 md:p-14 rounded-3xl text-center w-full shadow-[0_10px_40px_rgba(220,20,60,0.2)] border-l-4 border-l-rockRed">
+                            <i class="fa-solid fa-cloud-showers-heavy text-6xl text-rockRed mb-6 drop-shadow-lg"></i>
+                            <p class="mb-10 font-black text-3xl md:text-4xl leading-snug text-white">When you have a terrible day, what do you do to <span class="text-rockRed">survive</span> it?</p>
+                            
+                            <div class="stt-box p-6 bg-white/5 text-left rounded-xl border-l-rockRed">
+                                <span class="text-xs font-mono text-rockRed block mb-2 uppercase tracking-widest"><i class="fa-solid fa-microphone mr-2"></i>Speak:</span>
+                                <p class="text-white text-xl font-medium">"When my day is awful, the only thing that helps me is..."</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Warmup: Moving On",
+                html: `
+                    <div class="w-full max-w-4xl mx-auto px-4 py-12 fade-in flex flex-col items-center">
+                        <div class="text-center mb-8"><h2 class="font-bold text-2xl text-spSubtext uppercase tracking-widest">Symptom Check III</h2></div>
+                        <div class="glass-panel p-10 md:p-14 rounded-3xl text-center w-full shadow-[0_10px_40px_rgba(255,255,255,0.1)]">
+                            <i class="fa-solid fa-person-running text-6xl text-white mb-6 drop-shadow-lg"></i>
+                            <p class="mb-10 font-black text-3xl md:text-4xl leading-snug text-white">Is it easy for you to <span class="text-gray-400">leave the past behind</span> and move forward?</p>
+                            
+                            <div class="stt-box p-6 bg-white/5 text-left rounded-xl border-l-white">
+                                <span class="text-xs font-mono text-white/60 block mb-2 uppercase tracking-widest"><i class="fa-solid fa-microphone mr-2"></i>Speak:</span>
+                                <p class="text-white text-xl font-medium">"Honestly, it's very difficult for me to... / It's easy because..."</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            // 6-9. SECRET LYRICS
+            {
+                title: "Reflection 1",
+                html: `
+                    <div class="w-full h-full flex flex-col max-w-5xl mx-auto px-4 py-8 fade-in">
+                        <div class="text-center mb-6"><h2 class="font-bold text-2xl text-spSubtext uppercase tracking-widest">Lyric Decryption</h2></div>
+                        
+                        <div class="flex-grow glass-panel p-8 md:p-12 rounded-3xl shadow-2xl flex flex-col justify-between w-full">
+                            <div class="text-center my-auto">
+                                <p class="font-black text-4xl md:text-6xl leading-tight drop-shadow-lg">"<span class="lyric-word" onclick="revealIntel('go_ahead', this)">Go ahead</span> as you <span class="lyric-word" onclick="revealIntel('waste', this)">waste</span> your days with thinking."</p>
+                            </div>
+                            
+                            <div class="flex flex-col gap-6 mt-8 w-full">
+                                <div class="stt-box p-8 bg-white/5 text-left rounded-2xl shadow-md border-l-4 border-rockOrange">
+                                    <span class="text-sm font-mono text-rockOrange block mb-3 uppercase tracking-widest"><i class="fa-solid fa-microphone mr-2"></i>Discuss:</span>
+                                    <p class="text-white text-xl font-medium">The singer is being sarcastic. Why is "thinking too much" a waste of days?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Reflection 2",
+                html: `
+                    <div class="w-full h-full flex flex-col max-w-5xl mx-auto px-4 py-8 fade-in">
+                        <div class="text-center mb-6"><h2 class="font-bold text-2xl text-spSubtext uppercase tracking-widest">Lyric Decryption</h2></div>
+                        
+                        <div class="flex-grow glass-panel p-8 md:p-12 rounded-3xl shadow-2xl flex flex-col justify-between w-full border-l-4 border-l-rockRed">
+                            <div class="text-center my-auto">
+                                <p class="font-black text-4xl md:text-6xl leading-tight drop-shadow-lg">"When all you got to keep is <span class="lyric-word" onclick="revealIntel('strong', this)">strong</span>."</p>
+                            </div>
+                            
+                            <div class="flex flex-col gap-6 mt-8 w-full">
+                                <div class="stt-box p-8 bg-white/5 text-left rounded-2xl shadow-md border-l-4 border-rockRed">
+                                    <span class="text-sm font-mono text-rockRed block mb-3 uppercase tracking-widest"><i class="fa-solid fa-microphone mr-2"></i>Discuss:</span>
+                                    <p class="text-white text-xl font-medium">When you lose everything, why is being "strong" the only thing you have left?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Reflection 3",
+                html: `
+                    <div class="w-full h-full flex flex-col max-w-5xl mx-auto px-4 py-8 fade-in">
+                        <div class="text-center mb-6"><h2 class="font-bold text-2xl text-spSubtext uppercase tracking-widest">Lyric Decryption</h2></div>
+                        
+                        <div class="flex-grow glass-panel p-8 md:p-12 rounded-3xl shadow-2xl flex flex-col justify-between w-full">
+                            <div class="text-center my-auto">
+                                <p class="font-black text-5xl md:text-7xl leading-tight drop-shadow-[0_0_20px_rgba(255,69,0,0.5)]">"<span class="lyric-word" onclick="revealIntel('move_along', this)">Move along</span>, move along like I know you do."</p>
+                            </div>
+                            
+                            <div class="flex flex-col gap-6 mt-8 w-full">
+                                <div class="stt-box p-8 bg-white/5 text-left rounded-2xl shadow-md border-l-4 border-rockOrange">
+                                    <span class="text-sm font-mono text-rockOrange block mb-3 uppercase tracking-widest"><i class="fa-solid fa-microphone mr-2"></i>Discuss:</span>
+                                    <p class="text-white text-xl font-medium">What is the best way to "move along" after a big disappointment?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Reflection 4",
+                html: `
+                    <div class="w-full h-full flex flex-col max-w-5xl mx-auto px-4 py-8 fade-in">
+                        <div class="text-center mb-6"><h2 class="font-bold text-2xl text-spSubtext uppercase tracking-widest">Lyric Decryption</h2></div>
+                        
+                        <div class="flex-grow glass-panel p-8 md:p-12 rounded-3xl shadow-2xl flex flex-col justify-between w-full border-l-4 border-l-gray-400">
+                            <div class="text-center my-auto">
+                                <p class="font-black text-4xl md:text-5xl leading-tight drop-shadow-lg">"<span class="lyric-word" onclick="revealIntel('even_when', this)">Even when</span> your <span class="lyric-word" onclick="revealIntel('hope', this)">hope</span> is gone..."</p>
+                                <p class="font-black text-4xl md:text-5xl leading-tight drop-shadow-lg mt-4">"Move along just to <span class="lyric-word" onclick="revealIntel('make_it_through', this)">make it through</span>."</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            // 10-11. THE REVEAL & VIDEO
+            {
+                title: "The Artist",
+                html: `
+                    <div class="w-full max-w-4xl mx-auto px-4 py-12 fade-in flex flex-col items-center">
+                        <div class="w-full max-w-lg h-64 rounded-2xl mb-8 shadow-[0_20px_50px_rgba(255,69,0,0.3)] border border-white/10 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f9af?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover grayscale opacity-80" onerror="this.style.display='none'">
+                        </div>
+                        <h2 class="font-black text-4xl text-white mb-4 text-center drop-shadow-lg">The All-American Rejects</h2>
+                        <p class="text-xl text-white/70 text-center max-w-2xl leading-relaxed">This song is a pop-punk anthem from 2005. It was written to inspire people to keep fighting and moving forward when life gets incredibly difficult.</p>
+                        <button onclick="nextStep()" class="mt-8 bg-rockOrange text-white font-bold text-lg rounded-full py-4 px-12 hover:scale-105 transition-transform shadow-[0_10px_30px_rgba(255,69,0,0.4)]">Play Track</button>
+                    </div>
+                `
+            },
+            {
+                title: "The Track (Video)",
+                html: `
+                    <div class="w-full max-w-4xl mx-auto px-4 py-8 fade-in h-full flex flex-col justify-center">
+                        <div class="relative w-full aspect-video rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(255,69,0,0.4)] border border-white/10 bg-black">
+                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/XleOkGsYgO8?start=55&rel=0&modestbranding=1" title="Move Along Video" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <p class="text-center text-white/50 mt-8 text-sm"><i class="fa-solid fa-headphones mr-2"></i>Listen to the intense chorus.</p>
+                    </div>
+                `
+            },
+            // 12-13. DISCUSSION
+            {
+                title: "Discussion: The Video",
+                html: `
+                    <div class="w-full max-w-4xl mx-auto px-4 py-12 fade-in text-center">
+                        <i class="fa-solid fa-person-falling text-7xl text-rockOrange mb-8 drop-shadow-[0_0_20px_rgba(255,69,0,0.4)]"></i>
+                        <h2 class="font-bold text-4xl text-white mb-10 drop-shadow-md">Visual Metaphor</h2>
+                        <div class="glass-panel p-12 rounded-3xl text-left shadow-2xl border-l-4 border-rockOrange">
+                            <p class="text-white/80 text-xl mb-8 font-medium">In the music video, the singer falls down, gets crashed into water, and struggles, but he never stops singing.</p>
+                            <div class="bg-black/30 p-6 rounded-xl border border-white/10 mb-8">
+                                <p class="text-white text-2xl font-bold">What does this represent in our real lives?</p>
+                            </div>
+                            <div class="stt-box p-6 border-l-white glass-panel rounded-2xl">
+                                <span class="text-xs font-mono text-spSubtext block mb-3 uppercase tracking-widest">🗣️ Speaking Starter:</span>
+                                <p class="text-white font-medium text-lg">"I think it represents... because in life we often..."</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Discussion: The Impact",
+                html: `
+                    <div class="w-full max-w-4xl mx-auto px-4 py-12 fade-in text-center">
+                        <i class="fa-solid fa-heart-crack text-7xl text-rockRed mb-8 drop-shadow-[0_0_20px_rgba(220,20,60,0.4)]"></i>
+                        <h2 class="font-bold text-4xl text-white mb-10 drop-shadow-md">The Power of Music</h2>
+                        <div class="glass-panel p-12 rounded-3xl text-left shadow-2xl border-l-4 border-rockRed">
+                            <p class="text-white/80 text-xl mb-8 font-medium">Many people listen to this song when they are having a very bad day or a depressive episode.</p>
+                            <div class="bg-black/30 p-6 rounded-xl border border-white/10 mb-8">
+                                <p class="text-white text-2xl font-bold">How can a simple song help someone "make it through" a storm?</p>
+                            </div>
+                            <div class="stt-box p-6 border-l-white glass-panel rounded-2xl border-l-rockRed">
+                                <span class="text-xs font-mono text-spSubtext block mb-3 uppercase tracking-widest">🗣️ Speaking Starter:</span>
+                                <p class="text-white font-medium text-lg">"Music is powerful because... It can make us feel..."</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            // 14-16. GRAMMAR DISCOVERY
+            {
+                title: "Grammar: Phrasal Verbs",
+                html: `
+                    <div class="w-full max-w-3xl mx-auto px-4 py-12 fade-in">
+                        <div class="text-center mb-10">
+                            <h2 class="font-black text-4xl text-white mb-4 drop-shadow-md">Verbs of Action</h2>
+                            <p class="text-white/80 text-lg leading-relaxed max-w-xl mx-auto">A Phrasal Verb is a Verb + Preposition. In this song, they show <strong class="text-rockOrange">movement</strong> and <strong class="text-rockOrange">resilience</strong>.</p>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="glass-panel p-8 rounded-2xl shadow-lg border-l-4 border-rockOrange">
+                                <p class="text-2xl font-bold text-white mb-2"><span class="text-rockOrange">MOVE ALONG</span></p>
+                                <p class="text-white/70">To continue forward; don't stop here.</p>
+                            </div>
+                            <div class="glass-panel p-8 rounded-2xl shadow-lg border-l-4 border-rockRed">
+                                <p class="text-2xl font-bold text-white mb-2"><span class="text-rockRed">GO AHEAD</span></p>
+                                <p class="text-white/70">To proceed; to start doing something.</p>
+                            </div>
+                            <div class="glass-panel p-8 rounded-2xl shadow-lg border-l-4 border-gray-400">
+                                <p class="text-2xl font-bold text-white mb-2"><span class="text-gray-400">MAKE IT THROUGH</span></p>
+                                <p class="text-white/70">To survive a storm or difficult time to the end.</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Grammar: Even When",
+                html: `
+                    <div class="w-full max-w-3xl mx-auto px-4 py-12 fade-in">
+                        <h2 class="font-bold text-4xl text-white mb-8 border-b border-white/10 pb-4">Concessive Time: EVEN WHEN 🌧️</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl">
+                            <p class="text-xl text-white/80 mb-6 font-medium">We use <strong class="text-rockOrange">Even when</strong> to say that a difficult or extreme situation <strong class="text-rockRed">will NOT stop</strong> the action.</p>
+                            <div class="bg-black/30 p-8 rounded-xl border border-white/5 mb-8 flex flex-col items-center text-center">
+                                <p class="text-2xl font-bold text-white mb-4">"<span class="text-rockOrange">Even when</span> your hope is gone, <span class="text-white">move along</span>."</p>
+                                <p class="text-white/70 text-base">(= It doesn't matter if you have zero hope, you still have to move.)</p>
+                            </div>
+                            <div class="stt-box p-6 rounded-xl">
+                                <span class="text-xs text-rockOrange font-bold uppercase tracking-widest block mb-2">Speak:</span>
+                                <p class="text-white text-lg">"I still go to the gym <strong class="text-rockOrange">even when</strong> I am..."</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Grammar: Just To",
+                html: `
+                    <div class="w-full max-w-3xl mx-auto px-4 py-12 fade-in">
+                        <h2 class="font-bold text-4xl text-white mb-8 border-b border-white/10 pb-4">Purpose: JUST TO 🎯</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl">
+                            <p class="text-xl text-white/80 mb-6 font-medium">We use <strong class="text-spGreen">just to + verb</strong> to show the SINGLE, absolute reason for doing something.</p>
+                            <div class="bg-black/30 p-8 rounded-xl border border-white/5 mb-8">
+                                <p class="text-2xl font-bold text-white mb-4 text-center">"Move along <span class="text-spGreen">just to</span> make it through."</p>
+                                <p class="text-white/70 text-base text-center">(= The ONLY reason you are moving is to survive/finish the hard time.)</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            // 17-25. DRILLS (Combat Expanded - 9 Drills)
+            {
+                title: "Drill 1: Phrasal Verbs",
+                html: `
+                    <div class="w-full max-w-2xl mx-auto px-4 py-16 fade-in text-center">
+                        <h2 class="font-bold text-3xl text-white mb-12 drop-shadow-md">Vocabulary Check 🏃‍♂️</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl" id="drill-1">
+                            <p class="text-xl text-white/60 mb-6 font-medium">Don't stop here in the past. You must...</p>
+                            <p class="text-3xl font-bold text-white mb-10 drop-shadow-md">"_____ along."</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="checkCombat(this, false, 1)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">go</button>
+                                <button onclick="checkCombat(this, true, 1)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">move</button>
+                            </div>
+                            <div class="stt-box p-6 mt-8 hidden slide-up text-left glass-panel rounded-2xl" id="fb-1">
+                                <p class="text-spGreen font-bold mb-2 text-lg drop-shadow-sm">Correct!</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Drill 2: Phrasal Verbs",
+                html: `
+                    <div class="w-full max-w-2xl mx-auto px-4 py-16 fade-in text-center">
+                        <h2 class="font-bold text-3xl text-white mb-12 drop-shadow-md">Vocabulary Check 🟢</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl" id="drill-2">
+                            <p class="text-xl text-white/60 mb-6 font-medium">You want to waste your days thinking?</p>
+                            <p class="text-3xl font-bold text-white mb-10 drop-shadow-md">"_____ ahead!"</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="checkCombat(this, true, 2)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">Go</button>
+                                <button onclick="checkCombat(this, false, 2)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">Make</button>
+                            </div>
+                            <div class="stt-box p-6 mt-8 hidden slide-up text-left glass-panel rounded-2xl" id="fb-2">
+                                <p class="text-spGreen font-bold text-lg drop-shadow-sm">Awesome!</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Drill 3: Phrasal Verbs",
+                html: `
+                    <div class="w-full max-w-2xl mx-auto px-4 py-16 fade-in text-center">
+                        <h2 class="font-bold text-3xl text-white mb-12 drop-shadow-md">Vocabulary Check 🛡️</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl" id="drill-3">
+                            <p class="text-xl text-white/60 mb-6 font-medium">It's a difficult test, but I know you will...</p>
+                            <p class="text-3xl font-bold text-white mb-10 drop-shadow-md">"_____ it through."</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="checkCombat(this, false, 3)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">get</button>
+                                <button onclick="checkCombat(this, true, 3)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">make</button>
+                            </div>
+                            <div class="stt-box p-6 mt-8 hidden slide-up text-left glass-panel rounded-2xl" id="fb-3">
+                                <p class="text-spGreen font-bold mb-2 text-lg drop-shadow-sm">Correct! Make it through = Survive/finish.</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Drill 4: Even When",
+                html: `
+                    <div class="w-full max-w-2xl mx-auto px-4 py-16 fade-in text-center">
+                        <h2 class="font-bold text-3xl text-white mb-12 drop-shadow-md">Logic Check 🌧️</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl" id="drill-4">
+                            <p class="text-xl text-white/60 mb-6 font-medium">I will love you ____ you are angry at me.</p>
+                            <p class="text-3xl font-bold text-white mb-10 drop-shadow-md">Choose the best option:</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="checkCombat(this, false, 4)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">if</button>
+                                <button onclick="checkCombat(this, true, 4)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">even when</button>
+                            </div>
+                            <div id="fb-4" class="stt-box p-6 mt-8 hidden slide-up text-left glass-panel rounded-2xl"><p class="text-spGreen font-bold text-lg drop-shadow-sm">Great job! The anger doesn't stop the love.</p></div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Drill 5: Lyric Check",
+                html: `
+                    <div class="w-full max-w-2xl mx-auto px-4 py-16 fade-in text-center">
+                        <h2 class="font-bold text-3xl text-white mb-12 drop-shadow-md">Remember the song?</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl" id="drill-5">
+                            <p class="text-3xl font-bold text-white mb-10 drop-shadow-md">"When all you got to keep is _____."</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="checkCombat(this, false, 5)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">hope</button>
+                                <button onclick="checkCombat(this, true, 5)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">strong</button>
+                            </div>
+                            <div id="fb-5" class="stt-box p-6 mt-8 hidden slide-up text-left glass-panel rounded-2xl"><p class="text-spGreen font-bold text-lg drop-shadow-sm">Perfect!</p></div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Drill 6: Just to",
+                html: `
+                    <div class="w-full max-w-2xl mx-auto px-4 py-16 fade-in text-center">
+                        <h2 class="font-bold text-3xl text-white mb-12 drop-shadow-md">Purpose 🎯</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl" id="drill-6">
+                            <p class="text-xl text-white/60 mb-6 font-medium">I only called because I wanted to say hello.</p>
+                            <p class="text-3xl font-bold text-white mb-10 drop-shadow-md">"I called _____ say hello."</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="checkCombat(this, true, 6)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">just to</button>
+                                <button onclick="checkCombat(this, false, 6)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">even when</button>
+                            </div>
+                            <div id="fb-6" class="stt-box p-6 mt-8 hidden slide-up text-left glass-panel rounded-2xl"><p class="text-spGreen font-bold text-lg drop-shadow-sm">Correct!</p></div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Drill 7: Logic",
+                html: `
+                    <div class="w-full max-w-2xl mx-auto px-4 py-16 fade-in text-center">
+                        <h2 class="font-bold text-3xl text-white mb-12 drop-shadow-md">Logic Check</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl" id="drill-7">
+                            <p class="text-xl text-white/60 mb-6 font-medium">I study hard every day, _____ I am tired.</p>
+                            <p class="text-3xl font-bold text-white mb-10 drop-shadow-md">Choose:</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="checkCombat(this, false, 7)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">just to</button>
+                                <button onclick="checkCombat(this, true, 7)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">even when</button>
+                            </div>
+                            <div id="fb-7" class="stt-box p-6 mt-8 hidden slide-up text-left glass-panel rounded-2xl"><p class="text-spGreen font-bold text-lg drop-shadow-sm">Exactly!</p></div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Drill 8: Vocabulary",
+                html: `
+                    <div class="w-full max-w-2xl mx-auto px-4 py-16 fade-in text-center">
+                        <h2 class="font-bold text-3xl text-white mb-12 drop-shadow-md">Logic Check</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl" id="drill-8">
+                            <p class="text-xl text-white/60 mb-6 font-medium">If you spend 5 hours on TikTok, you...</p>
+                            <p class="text-3xl font-bold text-white mb-10 drop-shadow-md">"_____ your days."</p>
+                            <div class="grid grid-cols-1 gap-4">
+                                <button onclick="checkCombat(this, false, 8)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">move along</button>
+                                <button onclick="checkCombat(this, true, 8)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">waste</button>
+                            </div>
+                            <div id="fb-8" class="stt-box p-6 mt-8 hidden slide-up text-left glass-panel rounded-2xl"><p class="text-spGreen font-bold text-lg drop-shadow-sm">Yes, you waste time!</p></div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Drill 9: Concession",
+                html: `
+                    <div class="w-full max-w-2xl mx-auto px-4 py-16 fade-in text-center">
+                        <h2 class="font-bold text-3xl text-white mb-12 drop-shadow-md">Logic Check</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl" id="drill-9">
+                            <p class="text-xl text-white/60 mb-6 font-medium">I will finish this project, ____ it takes all night.</p>
+                            <p class="text-3xl font-bold text-white mb-10 drop-shadow-md">Choose:</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="checkCombat(this, false, 9)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">just to</button>
+                                <button onclick="checkCombat(this, true, 9)" class="combat-btn text-white p-5 rounded-2xl font-bold text-xl">even when</button>
+                            </div>
+                            <div id="fb-9" class="stt-box p-6 mt-8 hidden slide-up text-left glass-panel rounded-2xl"><p class="text-spGreen font-bold text-lg drop-shadow-sm">Correct! It doesn't matter if it takes all night.</p></div>
+                        </div>
+                    </div>
+                `
+            },
+            // 26-27. PRONUNCIATION
+            {
+                title: "Pronunciation: Flap T",
+                html: `
+                    <div class="w-full max-w-3xl mx-auto px-4 py-12 fade-in text-center">
+                        <h2 class="font-bold text-4xl text-white mb-8 border-b border-white/10 pb-4 drop-shadow-md">Speak like a Singer 🎤</h2>
+                        <div class="glass-panel p-12 rounded-3xl mb-10 shadow-2xl">
+                            <p class="text-xl text-white/70 mb-6 font-medium">In American English, when a "T" is between vowels, it sounds like a fast "D" or Spanish "R".</p>
+                            <div class="flex justify-center mt-8">
+                                <div class="text-center">
+                                    <p class="text-3xl font-bold text-white">Got to <i class="fa-solid fa-arrow-right text-rockOrange mx-4"></i> Ga<span class="text-rockOrange">dd</span>a</p>
+                                    <p class="text-spGreen font-mono mt-4 text-xl">"When all you <span class="text-rockOrange font-bold">ga-dda</span> keep is strong."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Pronunciation: Practice",
+                html: `
+                    <div class="w-full max-w-3xl mx-auto px-4 py-12 fade-in text-center">
+                        <h2 class="font-bold text-4xl text-white mb-8 drop-shadow-md">Practice Time!</h2>
+                        <div class="stt-box p-10 glass-panel rounded-2xl shadow-xl border-l-8">
+                            <span class="text-xs text-rockOrange font-bold uppercase tracking-widest block mb-4 drop-shadow-sm">Read out loud fast:</span>
+                            <p class="text-white text-3xl font-bold mb-6">"I <span class="text-rockOrange">gadda</span> go."</p>
+                            <p class="text-white text-3xl font-bold mb-6">"You <span class="text-rockOrange">gadda</span> be strong."</p>
+                            <p class="text-white text-3xl font-bold">"Move a-<span class="text-rockOrange">long</span>."</p>
+                        </div>
+                    </div>
+                `
+            },
+            // 28-31. INTERACTIVE VIBE BUTTONS (RPG Style)
+            {
+                title: "Your Vibe: The Past",
+                html: `
+                    <div class="w-full max-w-4xl mx-auto px-4 py-12 fade-in text-center">
+                        <h2 class="font-bold text-4xl text-white mb-12 drop-shadow-md">Where do you stand?</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl">
+                            <p class="text-xl text-white/70 mb-8 font-medium">When a bad thing happens in your life...</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <button id="vibe-btn-1-a" onclick="selectVibe(1, 'a')" class="p-8 border-2 border-white/10 bg-black/40 rounded-2xl hover:bg-white/5 hover:border-white/30 transition-all text-xl font-bold flex flex-col items-center justify-center gap-4 group">
+                                    <span class="text-5xl group-hover:scale-110 transition-transform">🕰️</span>
+                                    <span>I get stuck in the past</span>
+                                </button>
+                                <button id="vibe-btn-1-b" onclick="selectVibe(1, 'b')" class="p-8 border-2 border-white/10 bg-black/40 rounded-2xl hover:bg-white/5 hover:border-white/30 transition-all text-xl font-bold flex flex-col items-center justify-center gap-4 group">
+                                    <span class="text-5xl group-hover:scale-110 transition-transform">🚀</span>
+                                    <span>I try to move along</span>
+                                </button>
+                            </div>
+                            <div id="vibe-fb-1-a" class="hidden stt-box p-8 text-left bg-white/5 rounded-2xl border-l-4 border-rockRed shadow-inner">
+                                <span class="text-xs text-rockRed font-bold uppercase tracking-widest block mb-3">🗣️ Speak:</span>
+                                <p class="text-white text-xl font-medium italic">"I usually get stuck thinking about... because..."</p>
+                            </div>
+                            <div id="vibe-fb-1-b" class="hidden stt-box p-8 text-left bg-white/5 rounded-2xl border-l-4 border-spGreen shadow-inner">
+                                <span class="text-xs text-spGreen font-bold uppercase tracking-widest block mb-3">🗣️ Speak:</span>
+                                <p class="text-white text-xl font-medium italic">"I try to move along by doing things like..."</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Your Vibe: Hope",
+                html: `
+                    <div class="w-full max-w-4xl mx-auto px-4 py-12 fade-in text-center">
+                        <h2 class="font-bold text-4xl text-white mb-12 drop-shadow-md">Where do you stand?</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl">
+                            <p class="text-xl text-white/70 mb-8 font-medium">When a situation feels impossible...</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <button id="vibe-btn-2-a" onclick="selectVibe(2, 'a')" class="p-8 border-2 border-white/10 bg-black/40 rounded-2xl hover:bg-white/5 hover:border-white/30 transition-all text-xl font-bold flex flex-col items-center justify-center gap-4 group">
+                                    <span class="text-5xl group-hover:scale-110 transition-transform">🥀</span>
+                                    <span>I lose hope fast</span>
+                                </button>
+                                <button id="vibe-btn-2-b" onclick="selectVibe(2, 'b')" class="p-8 border-2 border-white/10 bg-black/40 rounded-2xl hover:bg-white/5 hover:border-white/30 transition-all text-xl font-bold flex flex-col items-center justify-center gap-4 group">
+                                    <span class="text-5xl group-hover:scale-110 transition-transform">🛡️</span>
+                                    <span>I make it through</span>
+                                </button>
+                            </div>
+                            <div id="vibe-fb-2-a" class="hidden stt-box p-8 text-left bg-white/5 rounded-2xl border-l-4 border-gray-400 shadow-inner">
+                                <span class="text-xs text-gray-400 font-bold uppercase tracking-widest block mb-3">🗣️ Speak:</span>
+                                <p class="text-white text-xl font-medium italic">"When I lose hope, I usually..."</p>
+                            </div>
+                            <div id="vibe-fb-2-b" class="hidden stt-box p-8 text-left bg-white/5 rounded-2xl border-l-4 border-rockOrange shadow-inner">
+                                <span class="text-xs text-rockOrange font-bold uppercase tracking-widest block mb-3">🗣️ Speak:</span>
+                                <p class="text-white text-xl font-medium italic">"Even when it's hard, I survive by..."</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Your Vibe: Forgiveness",
+                html: `
+                    <div class="w-full max-w-4xl mx-auto px-4 py-12 fade-in text-center">
+                        <h2 class="font-bold text-4xl text-white mb-12 drop-shadow-md">Where do you stand?</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl">
+                            <p class="text-xl text-white/70 mb-8 font-medium">When someone hurts your feelings...</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <button id="vibe-btn-3-a" onclick="selectVibe(3, 'a')" class="p-8 border-2 border-white/10 bg-black/40 rounded-2xl hover:bg-white/5 hover:border-white/30 transition-all text-xl font-bold flex flex-col items-center justify-center gap-4 group">
+                                    <span class="text-5xl group-hover:scale-110 transition-transform">😠</span>
+                                    <span>I hold a grudge</span>
+                                </button>
+                                <button id="vibe-btn-3-b" onclick="selectVibe(3, 'b')" class="p-8 border-2 border-white/10 bg-black/40 rounded-2xl hover:bg-white/5 hover:border-white/30 transition-all text-xl font-bold flex flex-col items-center justify-center gap-4 group">
+                                    <span class="text-5xl group-hover:scale-110 transition-transform">🕊️</span>
+                                    <span>I forgive & move along</span>
+                                </button>
+                            </div>
+                            <div id="vibe-fb-3-a" class="hidden stt-box p-8 text-left bg-white/5 rounded-2xl border-l-4 border-rockRed shadow-inner">
+                                <span class="text-xs text-rockRed font-bold uppercase tracking-widest block mb-3">🗣️ Speak:</span>
+                                <p class="text-white text-xl font-medium italic">"It's hard for me to forgive because..."</p>
+                            </div>
+                            <div id="vibe-fb-3-b" class="hidden stt-box p-8 text-left bg-white/5 rounded-2xl border-l-4 border-spGreen shadow-inner">
+                                <span class="text-xs text-spGreen font-bold uppercase tracking-widest block mb-3">🗣️ Speak:</span>
+                                <p class="text-white text-xl font-medium italic">"I forgive people because..."</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Your Vibe: Pressure",
+                html: `
+                    <div class="w-full max-w-4xl mx-auto px-4 py-12 fade-in text-center">
+                        <h2 class="font-bold text-4xl text-white mb-12 drop-shadow-md">Where do you stand?</h2>
+                        <div class="glass-panel p-10 rounded-3xl shadow-2xl">
+                            <p class="text-xl text-white/70 mb-8 font-medium">When you have too many things to do...</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <button id="vibe-btn-4-a" onclick="selectVibe(4, 'a')" class="p-8 border-2 border-white/10 bg-black/40 rounded-2xl hover:bg-white/5 hover:border-white/30 transition-all text-xl font-bold flex flex-col items-center justify-center gap-4 group">
+                                    <span class="text-5xl group-hover:scale-110 transition-transform">🥶</span>
+                                    <span>I overthink & freeze</span>
+                                </button>
+                                <button id="vibe-btn-4-b" onclick="selectVibe(4, 'b')" class="p-8 border-2 border-white/10 bg-black/40 rounded-2xl hover:bg-white/5 hover:border-white/30 transition-all text-xl font-bold flex flex-col items-center justify-center gap-4 group">
+                                    <span class="text-5xl group-hover:scale-110 transition-transform">🔥</span>
+                                    <span>I go ahead & do it</span>
+                                </button>
+                            </div>
+                            <div id="vibe-fb-4-a" class="hidden stt-box p-8 text-left bg-white/5 rounded-2xl border-l-4 border-blue-400 shadow-inner">
+                                <span class="text-xs text-blue-400 font-bold uppercase tracking-widest block mb-3">🗣️ Speak:</span>
+                                <p class="text-white text-xl font-medium italic">"I usually freeze and waste time because..."</p>
+                            </div>
+                            <div id="vibe-fb-4-b" class="hidden stt-box p-8 text-left bg-white/5 rounded-2xl border-l-4 border-rockOrange shadow-inner">
+                                <span class="text-xs text-rockOrange font-bold uppercase tracking-widest block mb-3">🗣️ Speak:</span>
+                                <p class="text-white text-xl font-medium italic">"I go ahead and start by doing..."</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            // 32-33. SPEAKING ARENA
+            {
+                title: "Speaking 1: Interview",
+                html: `
+                    <div class="w-full max-w-3xl mx-auto px-4 py-12 fade-in text-center">
+                        <i class="fa-solid fa-microphone text-7xl text-rockOrange mb-8 drop-shadow-[0_0_20px_rgba(255,69,0,0.4)]"></i>
+                        <h2 class="font-bold text-4xl text-white mb-10 drop-shadow-md">Interview the Teacher</h2>
+                        <div class="glass-panel p-12 rounded-3xl text-left border border-rockOrange/30 shadow-[0_0_40px_rgba(255,69,0,0.1)]">
+                            <p class="text-white/80 text-xl mb-8 font-medium">Ask your teacher these questions.</p>
+                            <ul class="space-y-6 text-white text-2xl font-bold">
+                                <li>1. Do you <span class="text-rockOrange drop-shadow-sm">waste</span> your days thinking?</li>
+                                <li>2. What is hard for you to <span class="text-rockOrange drop-shadow-sm">make it through</span>?</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Speaking 2: Roleplay",
+                html: `
+                    <div class="w-full max-w-3xl mx-auto px-4 py-12 fade-in text-center">
+                        <i class="fa-solid fa-hand-holding-heart text-7xl text-white mb-8 drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]"></i>
+                        <h2 class="font-bold text-4xl text-white mb-10 drop-shadow-md">Roleplay: The Friend</h2>
+                        <div class="glass-panel p-12 rounded-3xl text-left shadow-2xl border-l-4 border-rockRed">
+                            <p class="text-white/80 text-xl mb-6 font-medium">Your friend lost their job and has zero hope. Motivate them.</p>
+                            <ul class="space-y-6 text-white text-xl font-medium mb-8">
+                                <li>👉 Tell them to <strong class="text-rockRed">move along</strong>.</li>
+                                <li>👉 Remind them to be <strong class="text-rockRed">strong</strong>.</li>
+                            </ul>
+                            <div class="stt-box p-6 border-l-white glass-panel rounded-2xl">
+                                <p class="text-white font-medium text-lg">"Listen, I know it's hard, but even when..."</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            // 34. FINAL BOSS
+            {
+                title: "Sing it!",
+                html: `
+                    <div class="w-full max-w-4xl mx-auto px-4 py-12 fade-in text-center">
+                        <h2 class="font-black text-6xl text-rockOrange mb-12 tracking-tight drop-shadow-[0_0_20px_rgba(255,69,0,0.5)]">KARAOKE TIME 🎤</h2>
+                        <div class="glass-panel p-12 rounded-[2.5rem] border border-white/20 inline-block shadow-[0_20px_60px_rgba(0,0,0,0.8)] backdrop-blur-3xl">
+                            <p class="font-black text-3xl md:text-5xl text-white mb-8 drop-shadow-lg">"When all you got to keep is strong"</p>
+                            <p class="font-black text-4xl md:text-6xl text-rockOrange mb-8 drop-shadow-[0_0_15px_rgba(255,69,0,0.6)]">"Move along, move along like I know you do"</p>
+                            <p class="font-black text-3xl md:text-5xl text-white mb-8 drop-shadow-lg">"And even when your hope is gone"</p>
+                            <p class="font-black text-4xl md:text-6xl text-rockOrange mt-12 drop-shadow-[0_0_15px_rgba(255,69,0,0.6)]">"Move along, move along just to make it through"</p>
+                        </div>
+                    </div>
+                `
+            },
+            // 35. WRAP
+            {
+                title: "Playlist Complete",
+                html: `
+                    <div class="w-full h-full flex flex-col items-center justify-center text-center px-4 fade-in">
+                        <i class="fa-solid fa-circle-check text-8xl text-spGreen mb-8 drop-shadow-[0_0_30px_rgba(29,185,84,0.5)]"></i>
+                        <h1 class="font-black text-5xl md:text-7xl text-white mb-6 tracking-tight drop-shadow-lg">Playlist Complete</h1>
+                        <p class="text-white/70 text-2xl mb-12 font-medium">You survived "Move Along".</p>
+                        
+                        <div class="flex gap-16 mb-16 glass-panel p-10 rounded-3xl shadow-2xl border border-white/10">
+                            <div class="flex flex-col items-center">
+                                <span class="text-white/50 text-sm uppercase tracking-widest font-bold mb-3">Energy</span>
+                                <span id="final-hp" class="text-white text-5xl font-black drop-shadow-md">100%</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-rockOrange text-sm uppercase tracking-widest font-bold mb-3">Fans (XP)</span>
+                                <span id="final-xp" class="text-white text-5xl font-black drop-shadow-md">0</span>
+                            </div>
+                        </div>
+                        <button onclick="location.reload()" class="bg-white text-black font-bold text-lg rounded-full py-5 px-16 hover:scale-105 transition-transform shadow-[0_10px_30px_rgba(255,255,255,0.2)]">Play Again</button>
+                    </div>
+                `,
+                onLoad: () => {
+                    document.getElementById('final-hp').innerText = state.hp + "%";
+                    document.getElementById('final-xp').innerText = state.xp;
+                }
+            }
+        ];
+
+        // 3. ENGINE LOGIC
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); }
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('hp-text').innerText = state.hp + "%";
+            document.getElementById('xp-text').innerText = state.xp;
+            const total = lessonData.length - 1;
+            const percentage = (state.current / total) * 100;
+            document.getElementById('playlist-progress').style.width = `${percentage}%`;
+            document.getElementById('player-progress').style.width = `${percentage}%`;
+        }
+
+        function takeDamage(amount) {
+            state.hp = Math.max(0, state.hp - amount);
+            updateHUD();
+            document.body.classList.add('damage-flash');
+            setTimeout(() => document.body.classList.remove('damage-flash'), 400);
+            if (state.hp <= 0) { 
+                alert("Game Over! Out of Energy."); 
+                location.reload(); 
+            }
+        }
+
+        function gainXP(amount) { state.xp += amount; updateHUD(); }
+
+        function renderMap() {
+            const container = document.getElementById('map-nodes');
+            document.getElementById('map-subtitle').innerText = `${lessonData.length} Steps • Intermediate B1`;
+            document.getElementById('total-step-display').innerText = lessonData.length;
+
+            container.innerHTML = lessonData.map((step, i) => {
+                let color = i === state.current ? 'text-rockOrange font-bold' : (i < state.current ? 'text-white' : 'text-spSubtext');
+                return `
+                <div class="flex items-center justify-between p-2 rounded cursor-pointer hover:bg-spHover group" onclick="jumpTo(${i})">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-mono w-4 text-right ${i === state.current ? 'text-rockOrange' : 'text-spSubtext'}">${i + 1}</span>
+                        <span class="text-sm ${color}">${step.title}</span>
+                    </div>
+                    ${i === state.current ? '<i class="fa-solid fa-volume-high text-rockOrange text-xs"></i>' : '<i class="fa-solid fa-play text-white opacity-0 group-hover:opacity-100 text-xs"></i>'}
+                </div>
+            `}).join('');
+        }
+
+        function renderStep() {
+            closeIntel();
+            const stage = document.getElementById('mission-content');
+            stage.innerHTML = lessonData[state.current].html;
+            
+            let displayNum = state.current + 1;
+            document.getElementById('current-step-display').innerText = displayNum < 10 ? `0${displayNum}` : displayNum;
+            document.getElementById('btn-prev').disabled = state.current === 0;
+            document.getElementById('btn-next').disabled = state.current === lessonData.length - 1;
+            
+            if (lessonData[state.current].onLoad) lessonData[state.current].onLoad();
+            renderMap();
+            updateHUD();
+        }
+
+        function nextStep() { if (state.current < lessonData.length - 1) { state.current++; renderStep(); } }
+        function prevStep() { if (state.current > 0) { state.current--; renderStep(); } }
+        function jumpTo(idx) { state.current = idx; renderStep(); toggleDrawer('lesson-map'); }
+
+        function toggleDrawer(id) {
+            const drawers = ['lesson-map', 'intel-panel', 'teacher-board'];
+            drawers.forEach(drawerId => {
+                const drawer = document.getElementById(drawerId);
+                if (!drawer) return;
+                
+                if (drawerId === id) {
+                    if (drawer.classList.contains('translate-x-full') || drawer.classList.contains('-translate-x-full')) {
+                        drawer.classList.remove('translate-x-full', '-translate-x-full');
+                    } else {
+                        if (id === 'lesson-map') drawer.classList.add('-translate-x-full');
+                        else drawer.classList.add('translate-x-full');
+                    }
+                } else {
+                    if (drawerId === 'lesson-map') drawer.classList.add('-translate-x-full');
+                    else drawer.classList.add('translate-x-full');
+                }
+            });
+        }
+
+        function clearNotes() {
+            document.getElementById('t-notes').value = '';
+            document.getElementById('t-notes').focus();
+        }
+
+        // --- NEW: Vibe Choice Logic ---
+        function selectVibe(num, choice) {
+            const btnA = document.getElementById(`vibe-btn-${num}-a`);
+            const btnB = document.getElementById(`vibe-btn-${num}-b`);
+            const fbA = document.getElementById(`vibe-fb-${num}-a`);
+            const fbB = document.getElementById(`vibe-fb-${num}-b`);
+
+            // Reset states
+            btnA.classList.remove('border-rockOrange', 'bg-rockOrange/10', 'text-rockOrange');
+            btnB.classList.remove('border-rockOrange', 'bg-rockOrange/10', 'text-rockOrange');
+            fbA.classList.add('hidden');
+            fbB.classList.add('hidden');
+
+            // Apply selected
+            if (choice === 'a') {
+                btnA.classList.add('border-rockOrange', 'bg-rockOrange/10', 'text-rockOrange');
+                fbA.classList.remove('hidden');
+                fbA.classList.add('slide-up');
+            } else {
+                btnB.classList.add('border-rockOrange', 'bg-rockOrange/10', 'text-rockOrange');
+                fbB.classList.remove('hidden');
+                fbB.classList.add('slide-up');
+            }
+        }
+
+        function revealIntel(key, el = null) {
+            const data = intelDB[key];
+            if (!data) return;
+            
+            if (el) {
+                document.querySelectorAll('.lyric-word').forEach(r => r.classList.remove('active'));
+                el.classList.add('active');
+            }
+            
+            document.getElementById('intel-content').innerHTML = `
+                <div class="flex flex-col items-center text-center mb-10 fade-in">
+                    <span class="text-7xl mb-6 drop-shadow-lg">${data.emoji}</span>
+                    <h2 class="font-black text-4xl text-white mb-4 drop-shadow-md">${data.title}</h2>
+                    <span class="glass-panel text-white border border-white/20 px-4 py-1.5 rounded-md text-xs font-bold uppercase tracking-widest shadow-sm">${data.type}</span>
+                </div>
+                <div class="mb-6 slide-up">
+                    <p class="text-spSubtext text-xs uppercase font-bold tracking-widest mb-2 drop-shadow-sm">Meaning</p>
+                    <p class="text-white text-xl font-medium leading-relaxed">${data.meaning}</p>
+                </div>
+                <div class="glass-panel p-6 rounded-2xl slide-up border border-white/5" style="animation-delay: 0.1s">
+                    <p class="text-rockOrange text-xs uppercase font-bold tracking-widest mb-3 drop-shadow-sm">Example</p>
+                    <p class="text-white text-lg italic font-medium">"${data.example}"</p>
+                </div>
+                ${data.followUp ? `
+                <div class="stt-box p-5 mt-6 glass-panel rounded-xl shadow-lg slide-up border-l-rockOrange" style="animation-delay: 0.2s">
+                    <span class="text-xs text-rockOrange uppercase font-bold tracking-widest mb-2 block">Your Turn:</span>
+                    <p class="text-white text-base font-medium italic">"${data.followUp}"</p>
+                </div>
+                ` : ''}
+            `;
+            document.getElementById('intel-panel').classList.remove('translate-x-full');
+        }
+        
+        function closeIntel() { 
+            document.getElementById('intel-panel').classList.add('translate-x-full'); 
+            document.querySelectorAll('.lyric-word').forEach(r => r.classList.remove('active'));
+        }
+
+        function checkCombat(btn, isCorrect, num) {
+            const btns = btn.parentElement.querySelectorAll('.combat-btn');
+            btns.forEach(b => { b.disabled = true; if(b !== btn) b.style.opacity = '0.3'; });
+            
+            if (isCorrect) {
+                btn.classList.add('correct');
+                gainXP(20);
+                document.getElementById(`drill-${num}`).classList.add('xp-flash');
+                setTimeout(() => document.getElementById(`drill-${num}`).classList.remove('xp-flash'), 500);
+                document.getElementById(`fb-${num}`).classList.remove('hidden');
+            } else {
+                btn.classList.add('wrong');
+                takeDamage(15);
+                setTimeout(() => {
+                    btns.forEach(b => { if(!b.classList.contains('wrong')){ b.disabled = false; b.style.opacity = '1'; } });
+                }, 600);
+            }
+        }
+
+        window.onload = renderStep;
+    </script>
+</body>
+</html>
